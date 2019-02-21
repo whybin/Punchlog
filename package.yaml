@@ -21,6 +21,10 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- mtl == 2.2.*
+- text == 1.2.*
+- time == 1.8.*
+- transformers == 0.5.*
 
 library:
   source-dirs: src
@@ -35,9 +39,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - Punchlog
-    build-depends:
-    - gi-gtk
-    - gi-gtk-declarative == 0.4.*
 
 tests:
   Punchlog-test:
