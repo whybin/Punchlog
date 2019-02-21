@@ -5,6 +5,8 @@ import Control.Monad.Reader (Reader, ReaderT(..), ask, runReader)
 import qualified Data.Time.Clock as T
 import qualified Data.Time.LocalTime as T
 
+import qualified Util as U (liftReader)
+
 data TimeUnit = Hour
               | HalfHour
               | QuarterHour
@@ -35,5 +37,4 @@ localToChunk time = (\conf -> (computeValue conf, unit conf)) <$> ask
 currentTimeChunk :: ReaderT TimeConfig IO TimeChunk
 currentTimeChunk = do
     time <- localTime
-    chunk <- ReaderT $ return . (runReader $ localToChunk time)
-    return chunk
+    U.liftReader $ localToChunk time
