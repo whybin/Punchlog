@@ -3,7 +3,7 @@
 module TimeUnit where
 
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader (Reader, ReaderT, ask)
+import Control.Monad.Reader (Reader, ReaderT, ask, asks)
 import qualified Data.Aeson.TH as A (defaultOptions, deriveJSON)
 import qualified Data.Time.Calendar as T (Day)
 import qualified Data.Time.Clock as T
@@ -34,7 +34,7 @@ localTime = do
     liftIO $ T.utcToLocalTime (timeZone conf) <$> T.getCurrentTime
 
 localToChunk :: T.LocalTime -> Reader TimeConfig TimeChunk
-localToChunk time = (\conf -> (computeValue conf, unit conf)) <$> ask
+localToChunk time = asks $ \conf -> (computeValue conf, unit conf)
     where
         tod = T.localTimeOfDay time
         computeValue conf =

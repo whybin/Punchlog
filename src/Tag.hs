@@ -14,5 +14,5 @@ data RawTag = RawTag { tagId      :: Integer
                      }
 $(A.deriveJSON A.defaultOptions ''RawTag)
 
-data UiTag = UiTag { raw :: RawTag }
+newtype UiTag = UiTag { raw :: RawTag }
 
