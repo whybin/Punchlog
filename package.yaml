@@ -27,6 +27,7 @@ dependencies:
 - text == 1.2.*
 - time == 1.8.*
 - transformers == 0.5.*
+- unordered-containers == 0.2.*
 
 library:
   source-dirs: src
