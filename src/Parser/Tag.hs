@@ -11,6 +11,7 @@ import qualified Data.Text.Read as T (decimal)
 import qualified Data.Time.Calendar as TC (Day(..))
 
 import Tag (AllTags(..), DayTags, RawTag)
+import Parser.TimeUnit
 
 $(A.deriveJSON A.defaultOptions ''RawTag)
 

@@ -1,10 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module TimeUnit where
+module TimeUnit
+    ( TimeUnit
+    , TimestampUtc
+    , TimeConfig
+    ) where
 
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (Reader, ReaderT, ask, asks)
-import qualified Data.Aeson.TH as A (defaultOptions, deriveJSON)
 import qualified Data.Time.Calendar as T (Day)
 import qualified Data.Time.Clock as T
 import qualified Data.Time.LocalTime as T
@@ -15,14 +18,12 @@ data TimeUnit = Hour
               | HalfHour
               | QuarterHour
               deriving Show
-$(A.deriveJSON A.defaultOptions ''TimeUnit)
 
 type TimeChunk = (Int, TimeUnit)
 
 data TimestampUtc = TimestampUTC { dayUtc :: T.Day
                                  , timeChunkUtc :: TimeChunk
                                  }
-$(A.deriveJSON A.defaultOptions ''TimestampUtc)
 
 data TimeConfig = TimeConfig { unit :: TimeUnit
                              , timeZone :: T.TimeZone
