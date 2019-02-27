@@ -5,6 +5,7 @@ import System.IO.Error (IOError, catchIOError, ioError, isDoesNotExistError)
 
 import qualified Data.Yaml as Y (prettyPrintParseException)
 
+import qualified App as A (runApp)
 import qualified Config as C (Config)
 import qualified Parser.Config as PC (configFromFilePath)
 import qualified Parser.UserData as PU
@@ -34,4 +35,7 @@ retrieveData =
                                    else ioError e
 
 main :: IO ()
-main = someFunc
+main = do
+    config <- retrieveConfig
+    userData <- retrieveData
+    A.runApp config userData

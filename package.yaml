@@ -23,6 +23,9 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson == 1.4.*
 - bytestring == 0.10.*
+- gi-gtk == 3.*
+- gi-gtk-declarative == 0.4.*
+- gi-gtk-declarative-app-simple == 0.4.*
 - mtl == 2.2.*
 - text == 1.2.*
 - time == 1.8.*

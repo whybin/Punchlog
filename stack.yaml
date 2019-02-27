@@ -37,7 +37,9 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
-# extra-deps: []
+extra-deps:
+- gi-gtk-declarative-0.4.2@sha256:8f6a0c3fe61143b07b857d28ec4354c6e5540971ffbaf39837009e81c288a0bd
+- gi-gtk-declarative-app-simple-0.4.1@sha256:5090c7bc7bdf950eb0c98561b8de47d452eacee8871c640509ec4d72781a999d
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
