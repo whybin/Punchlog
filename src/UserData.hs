@@ -1,4 +1,6 @@
-module UserData where
+module UserData
+    ( UserData(..)
+    ) where
 
 import qualified Tag (AllTags)
 
