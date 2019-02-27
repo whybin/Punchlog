@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module TimeUnit
     ( TimeUnit
     , TimestampUtc
