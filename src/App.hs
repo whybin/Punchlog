@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -7,21 +8,20 @@ module App
     ) where
 
 import Control.Monad (void)
+import Control.Monad.Reader (runReader, withReader)
 
+import qualified Data.Text as T (pack)
+import qualified Data.Vector as V (fromList)
 import qualified GI.Gtk as Gtk
 import GI.Gtk.Declarative (Attribute((:=)))
 import qualified GI.Gtk.Declarative as GD
-  ( Widget(..)
-  , bin
-  , container
-  , on
-  , widget
-  )
 import qualified GI.Gtk.Declarative.App.Simple as GD
 
-import qualified Env as E (Env(..))
-import qualified Config as C (Config)
+import qualified Env as E (Env(..), AppEnv(..))
+import qualified GtkDecl.Extra.FlowBox
+import qualified Config as C (Config(..))
 import qualified State as S (State(..))
+import qualified TimeUnit as TU (minuteMarks)
 import qualified UserData as UD (UserData)
 
 type AppState = E.Env
@@ -34,16 +34,39 @@ update st Quit = GD.Exit
 view :: AppState -> GD.AppView Gtk.Window Event
 view st = GD.bin Gtk.Window [ #title := "Punchlog"
                             , GD.on #deleteEvent (const (True, Quit))
-                            ] $ dayView st
+                            ]
+            $ (runReader . E.runAppEnv $ dayView) st
 
-dayView :: AppState -> GD.Widget Event
-dayView st = GD.bin Gtk.Viewport [] $
-    GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
-        [ GD.widget Gtk.Label [ #label := "Today"
-                              , #xalign := 0
-                              ]
-        , GD.container Gtk.ListBox [] []
-        ]
+readView :: E.AppEnv (GD.Widget Event)
+readView = dayView
+
+dayView :: E.AppEnv (GD.Widget Event)
+dayView = do
+    hoursView' <- hoursView
+    pure $ GD.bin Gtk.Viewport [] $
+        GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+            [ GD.widget Gtk.Label [ #label := "Today"
+                                  , #xalign := 0
+                                  ]
+            , hoursView'
+            ]
+          where
+            hoursView = do
+                boxes <- timeBoxes
+                pure $ GD.container Gtk.Box
+                   [ #orientation := Gtk.OrientationVertical ]
+                   [ GD.container Gtk.FlowBox
+                       [ #selectionMode := Gtk.SelectionModeNone ]
+                       boxes
+                   ]
+            timeLabels :: E.AppEnv [String]
+            timeLabels = do
+                minuteMarks <- E.AppEnv
+                    $ withReader (C.timeConfig . E.config) TU.minuteMarks
+                pure $ (++) <$> fmap show [0..23] <*> fmap (':':) minuteMarks
+            timeToBox timeStr = GD.bin Gtk.FlowBoxChild []
+                $ GD.widget Gtk.Label [#label := T.pack timeStr]
+            timeBoxes = (V.fromList . fmap timeToBox) <$> timeLabels
 
 initialState :: C.Config -> UD.UserData -> AppState
 initialState config userData =

@@ -1,5 +1,5 @@
 module Config
-    ( Config
+    ( Config(..)
     ) where
 
 import qualified TimeUnit as TU (TimeConfig)
