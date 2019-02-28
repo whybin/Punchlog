@@ -1,5 +1,6 @@
 module TimeUnit
     ( TimeUnit
+    , minuteMarks
     , TimestampUtc
     , TimeConfig
     ) where
@@ -16,6 +17,14 @@ data TimeUnit = Hour
               | HalfHour
               | QuarterHour
               deriving Show
+
+minuteMarksFor :: TimeUnit -> [String]
+minuteMarksFor Hour = ["00"]
+minuteMarksFor HalfHour = ["00", "30"]
+minuteMarksFor QuarterHour = ["00", "15", "30", "45"]
+
+minuteMarks :: Reader TimeConfig [String]
+minuteMarks = asks $ minuteMarksFor . unit
 
 type TimeChunk = (Int, TimeUnit)
 
