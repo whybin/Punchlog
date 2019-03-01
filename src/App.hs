@@ -33,6 +33,8 @@ update st Quit = GD.Exit
 
 view :: AppState -> GD.AppView Gtk.Window Event
 view st = GD.bin Gtk.Window [ #title := "Punchlog"
+                            , #defaultWidth := 400
+                            , #defaultHeight := 640
                             , GD.on #deleteEvent (const (True, Quit))
                             ]
             $ (runReader . E.runAppEnv $ dayView) st
@@ -51,8 +53,12 @@ dayView = do
   where
     hoursView = do
         boxes <- timeBoxes
-        pure $ GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
-           boxes
+        pure $ GD.BoxChild GD.defaultBoxChildProperties { GD.expand = True
+                                                        , GD.fill = True
+                                                        }
+             $ GD.bin Gtk.ScrolledWindow []
+             $ GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+               boxes
     timeLabels :: E.AppEnv [String]
     timeLabels = do
         minuteMarks <- E.AppEnv
