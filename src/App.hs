@@ -45,28 +45,25 @@ dayView = do
     hoursView' <- hoursView
     pure $ GD.bin Gtk.Viewport [] $
         GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
-            [ GD.widget Gtk.Label [ #label := "Today"
-                                  , #xalign := 0
-                                  ]
+            [ GD.widget Gtk.Label [ #label := "Today", #xalign := 0 ]
             , hoursView'
             ]
-          where
-            hoursView = do
-                boxes <- timeBoxes
-                pure $ GD.container Gtk.Box
-                   [ #orientation := Gtk.OrientationVertical ]
-                   [ GD.container Gtk.FlowBox
-                       [ #selectionMode := Gtk.SelectionModeNone ]
-                       boxes
-                   ]
-            timeLabels :: E.AppEnv [String]
-            timeLabels = do
-                minuteMarks <- E.AppEnv
-                    $ withReader (C.timeConfig . E.config) TU.minuteMarks
-                pure $ (++) <$> fmap show [0..23] <*> fmap (':':) minuteMarks
-            timeToBox timeStr = GD.bin Gtk.FlowBoxChild []
+  where
+    hoursView = do
+        boxes <- timeBoxes
+        pure $ GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+           boxes
+    timeLabels :: E.AppEnv [String]
+    timeLabels = do
+        minuteMarks <- E.AppEnv
+            $ withReader (C.timeConfig . E.config) TU.minuteMarks
+        pure $ (++) <$> fmap show [0..23] <*> fmap (':':) minuteMarks
+    timeToBox timeStr =
+        GD.container Gtk.FlowBox [ #selectionMode := Gtk.SelectionModeNone ]
+            [ GD.bin Gtk.FlowBoxChild []
                 $ GD.widget Gtk.Label [#label := T.pack timeStr]
-            timeBoxes = (V.fromList . fmap timeToBox) <$> timeLabels
+            ]
+    timeBoxes = (V.fromList . fmap timeToBox) <$> timeLabels
 
 initialState :: C.Config -> UD.UserData -> AppState
 initialState config userData =
