@@ -18,6 +18,7 @@ import qualified GI.Gtk.Declarative as GD
 import qualified GI.Gtk.Declarative.App.Simple as GD
 
 import qualified Env as E (Env(..), AppEnv(..))
+import Event (Event(..))
 import qualified GtkDecl.Extra.FlowBox
 import qualified Config as C (Config(..))
 import qualified State as S (State(..))
@@ -26,10 +27,9 @@ import qualified UserData as UD (UserData)
 
 type AppState = E.Env
 
-data Event = Quit
-
 update :: AppState -> Event -> GD.Transition AppState Event
 update st Quit = GD.Exit
+update st Noop = GD.Transition st $ pure Nothing
 
 view :: AppState -> GD.AppView Gtk.Window Event
 view st = GD.bin Gtk.Window [ #title := "Punchlog"
