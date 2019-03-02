@@ -1,5 +1,5 @@
-module Ui.TimeChunk
-    ( onActivateTimeChunk
+module Ui.TimeSlot
+    ( onActivateTimeSlot
     ) where
 
 import qualified GI.Gtk as Gtk (ListBox, ListBoxRow)
@@ -7,7 +7,7 @@ import qualified GI.Gtk as Gtk (ListBox, ListBoxRow)
 import qualified Env as E (AppEnv)
 import qualified Event as Ev (Event(..))
 
-onActivateTimeChunk
+onActivateTimeSlot
     :: E.AppEnv (Maybe Gtk.ListBoxRow -> Gtk.ListBox -> IO Ev.Event)
-onActivateTimeChunk = pure
+onActivateTimeSlot = pure
     $ \row box -> putStrLn "clicked!" >> pure Ev.Noop

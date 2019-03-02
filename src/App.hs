@@ -27,7 +27,7 @@ import qualified Config as C (Config(..))
 import qualified State as S (State(..))
 import qualified TimeUnit as TU (minuteMarks)
 import qualified Ui.Sidebar as Si (sidebarView)
-import qualified Ui.TimeChunk as TC (onActivateTimeChunk)
+import qualified Ui.TimeSlot as TS (onActivateTimeSlot)
 import qualified UserData as UD (UserData)
 
 type AppState = E.Env
@@ -67,7 +67,7 @@ dayView = do
     hoursView :: E.AppEnv (_ Event)
     hoursView = do
         boxes <- timeBoxes
-        onActivate <- TC.onActivateTimeChunk
+        onActivate <- TS.onActivateTimeSlot
         pure $ GD.BoxChild GD.defaultBoxChildProperties { GD.expand = True
                                                         , GD.fill = True
                                                         }
