@@ -2,10 +2,14 @@
 
 module Env
     ( Env(..)
-    , AppEnv(..)
+    , AppEnvT(..)
+    , AppEnv
+    , runAppEnv
+    , liftToAppEnv
     ) where
 
-import Control.Monad.Reader (Reader)
+import Control.Monad.Reader (ReaderT)
+import Data.Functor.Identity (Identity)
 
 import qualified Config as C (Config)
 import qualified State as S (State)
@@ -16,5 +20,13 @@ data Env = Env { config :: C.Config
                , userData :: UD.UserData
                }
 
-newtype AppEnv a = AppEnv { runAppEnv :: Reader Env a }
+newtype AppEnvT m a = AppEnvT { runAppEnvT :: ReaderT Env m a }
     deriving (Functor, Applicative, Monad)
+
+type AppEnv a = AppEnvT Identity a
+
+runAppEnv :: AppEnv a -> ReaderT Env Identity a
+runAppEnv = runAppEnvT
+
+liftToAppEnv :: ReaderT Env Identity a -> AppEnv a
+liftToAppEnv = AppEnvT
