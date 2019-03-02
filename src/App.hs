@@ -26,6 +26,7 @@ import qualified GtkDecl.Extra.FlowBox
 import qualified Config as C (Config(..))
 import qualified State as S (State(..))
 import qualified TimeUnit as TU (minuteMarks)
+import qualified Ui.Sidebar as Si (sidebarView)
 import qualified Ui.TimeChunk as TC (onActivateTimeChunk)
 import qualified UserData as UD (UserData)
 
@@ -37,14 +38,22 @@ update st Noop = GD.Transition st $ pure Nothing
 
 view :: AppState -> GD.AppView Gtk.Window Event
 view st = GD.bin Gtk.Window [ #title := "Punchlog"
-                            , #defaultWidth := 400
+                            , #defaultWidth := 600
                             , #defaultHeight := 640
                             , GD.on #deleteEvent (const (True, Quit))
                             ]
-            $ (runReader . E.runAppEnv $ dayView) st
+            $ (runReader . E.runAppEnv $ readView) st
 
 readView :: E.AppEnv (GD.Widget Event)
-readView = dayView
+readView = do
+    dayView' <- dayView
+    sidebarView <- Si.sidebarView
+    pure $ GD.paned []
+        (GD.pane GD.defaultPaneProperties
+            $ GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+                [ sidebarView
+                ])
+        (GD.pane GD.defaultPaneProperties dayView')
 
 dayView :: E.AppEnv (GD.Widget Event)
 dayView = do
