@@ -1,7 +1,10 @@
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 module App
     ( runApp
@@ -17,12 +20,13 @@ import GI.Gtk.Declarative (Attribute((:=)))
 import qualified GI.Gtk.Declarative as GD
 import qualified GI.Gtk.Declarative.App.Simple as GD
 
-import qualified Env as E (Env(..), AppEnv(..))
+import qualified Env as E (Env(..), AppEnv, liftToAppEnv, runAppEnv)
 import Event (Event(..))
 import qualified GtkDecl.Extra.FlowBox
 import qualified Config as C (Config(..))
 import qualified State as S (State(..))
 import qualified TimeUnit as TU (minuteMarks)
+import qualified Ui.TimeChunk as TC (onActivateTimeChunk)
 import qualified UserData as UD (UserData)
 
 type AppState = E.Env
@@ -51,25 +55,31 @@ dayView = do
             , hoursView'
             ]
   where
+    hoursView :: E.AppEnv (_ Event)
     hoursView = do
         boxes <- timeBoxes
+        onActivate <- TC.onActivateTimeChunk
         pure $ GD.BoxChild GD.defaultBoxChildProperties { GD.expand = True
                                                         , GD.fill = True
                                                         }
              $ GD.bin Gtk.ScrolledWindow []
-             $ GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
-               boxes
+             $ GD.container Gtk.ListBox [ GD.onM #rowSelected onActivate
+                                        ] boxes
     timeLabels :: E.AppEnv [String]
     timeLabels = do
-        minuteMarks <- E.AppEnv
+        minuteMarks <- E.liftToAppEnv
             $ withReader (C.timeConfig . E.config) TU.minuteMarks
         pure $ (++) <$> fmap show [0..23] <*> fmap (':':) minuteMarks
+    timeToBox :: String -> _ Event
     timeToBox timeStr =
-        GD.container Gtk.FlowBox [ #selectionMode := Gtk.SelectionModeNone ]
+        GD.bin Gtk.ListBoxRow []
+        $ GD.container Gtk.FlowBox [#selectionMode := Gtk.SelectionModeNone]
             [ GD.bin Gtk.FlowBoxChild []
                 $ GD.widget Gtk.Label [#label := T.pack timeStr]
             ]
-    timeBoxes = (V.fromList . fmap timeToBox) <$> timeLabels
+    timeBoxes :: E.AppEnv (_ (_ Event))
+    timeBoxes = do
+        V.fromList . fmap timeToBox <$> timeLabels
 
 initialState :: C.Config -> UD.UserData -> AppState
 initialState config userData =
