@@ -8,12 +8,10 @@ module Event
 
 import qualified GI.Gtk.Declarative.App.Simple as GD (Transition(..))
 
-import qualified Env as E (Env)
-
 data Event = forall e. IsEvent e => Event e
 
 class IsEvent e where
-  update :: E.Env -> e -> GD.Transition E.Env Event
+  update :: st -> e -> GD.Transition st Event
 
 data BasicEvent = Quit
                 | Noop
