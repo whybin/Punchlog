@@ -1,6 +1,7 @@
 module TimeUnit
-    ( TimeUnit
+    ( TimeUnit(..)
     , minuteMarks
+    , TimeSlot
     , TimestampUtc
     , TimeConfig
     ) where
