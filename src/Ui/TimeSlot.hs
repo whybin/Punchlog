@@ -5,12 +5,12 @@ module Ui.TimeSlot
 import qualified GI.Gtk as Gtk (ListBox, ListBoxRow)
 
 import qualified Env as E (AppEnv)
-import qualified Event as Ev (IsEvent(..))
+import qualified Event as Ev (Event(..))
 import qualified TimeUnit as TU (TimeUnit(..))
 import qualified Ui.CreateTag as CT (CreateTagEvent(..))
 
 onActivateTimeSlot
-    -- :: Ev.IsEvent e => E.AppEnv (Maybe Gtk.ListBoxRow -> Gtk.ListBox -> IO e)
-    :: E.AppEnv (Maybe Gtk.ListBoxRow -> Gtk.ListBox -> IO CT.CreateTagEvent)
+    :: E.AppEnv (Maybe Gtk.ListBoxRow -> Gtk.ListBox -> IO Ev.Event)
 onActivateTimeSlot = pure
-    $ \row box -> putStrLn "clicked!" >> (pure $ CT.CreateTag (1, TU.Hour))
+    $ \row box -> putStrLn "clicked!"
+    >> (pure $ Ev.Event $ CT.CreateTag (1, TU.Hour))
