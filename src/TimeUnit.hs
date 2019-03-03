@@ -4,6 +4,7 @@ module TimeUnit
     , TimeSlot
     , TimestampUtc
     , TimeConfig
+    , currentTimeSlot
     ) where
 
 import Control.Monad.IO.Class (liftIO)
@@ -51,6 +52,16 @@ localToSlot time = asks $ \conf -> (computeValue conf, unit conf)
               Hour -> T.todHour tod
               HalfHour -> T.todHour tod * 2 + (T.todMin tod `div` 30)
               QuarterHour -> T.todHour tod * 4 + (T.todMin tod `div` 15)
+
+timeOfDayToSlot :: T.TimeOfDay -> Reader TimeConfig TimeSlot
+timeOfDayToSlot tod = asks computeSlot
+    where
+        computeUnits units =
+            case units of
+              Hour -> T.todHour tod
+              HalfHour -> T.todHour tod * 2 + (T.todMin tod `div` 30)
+              QuarterHour -> T.todHour tod * 4 + (T.todMin tod `div` 15)
+        computeSlot conf = (computeUnits (unit conf), unit conf)
 
 currentTimeSlot :: ReaderT TimeConfig IO TimeSlot
 currentTimeSlot = do
