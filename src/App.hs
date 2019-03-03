@@ -11,7 +11,7 @@ module App
     ) where
 
 import Control.Monad (void)
-import Control.Monad.Reader (runReader, withReader)
+import Control.Monad.Reader (ask, runReader, withReader)
 
 import qualified Data.Text as T (pack)
 import qualified Data.Vector as V (fromList)
@@ -20,7 +20,7 @@ import GI.Gtk.Declarative (Attribute((:=)))
 import qualified GI.Gtk.Declarative as GD
 import qualified GI.Gtk.Declarative.App.Simple as GD
 
-import qualified Env as E (Env(..), AppEnv, liftToAppEnv, runAppEnv)
+import qualified Env as E
 import qualified Event as Ev (BasicEvent(..), Event(..), IsEvent(..))
 import qualified GtkDecl.Extra.FlowBox
 import qualified Config as C (Config(..))
@@ -29,6 +29,7 @@ import qualified TimeUnit as TU (minuteMarks)
 import qualified Ui.Sidebar as Si (sidebarView)
 import qualified Ui.TimeSlot as TS (onActivateTimeSlot)
 import qualified UserData as UD (UserData)
+import qualified View as V
 
 type AppState = E.Env
 
@@ -46,14 +47,21 @@ view st = GD.bin Gtk.Window [ #title := "Punchlog"
 
 readView :: E.AppEnv (GD.Widget Ev.Event)
 readView = do
-    dayView' <- dayView
-    sidebarView <- Si.sidebarView
-    pure $ GD.paned []
-        (GD.pane GD.defaultPaneProperties
-            $ GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
-                [ sidebarView
-                ])
-        (GD.pane GD.defaultPaneProperties dayView')
+    st <- E.state <$> E.liftToAppEnv ask
+    case S.view st of
+      Just v -> processView v
+      Nothing -> mainView >>= processView
+  where
+    processView :: V.View -> E.AppEnv (GD.Widget Ev.Event)
+    processView view' =
+        case view' of
+          V.HPane lview rview ->
+              pure $ GD.paned [] (GD.pane GD.defaultPaneProperties lview)
+                                 (GD.pane GD.defaultPaneProperties rview)
+          V.SinglePane sview -> pure sview
+
+mainView :: E.AppEnv V.View
+mainView = V.HPane <$> Si.sidebarView <*> dayView
 
 dayView :: E.AppEnv (GD.Widget Ev.Event)
 dayView = do
@@ -93,7 +101,8 @@ dayView = do
 initialState :: C.Config -> UD.UserData -> AppState
 initialState config userData =
     E.Env { E.config = config
-          , E.state = S.State
+          , E.state = S.State { S.view = Nothing
+                              }
           , E.userData = userData
           }
 

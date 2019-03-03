@@ -1,3 +1,6 @@
 module State where
 
-data State = State
+import qualified View as V
+
+data State = State { view :: Maybe V.View
+                   }
