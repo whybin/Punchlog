@@ -1,32 +1,38 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Env
-    ( Env(..)
-    , AppEnvT(..)
+    ( State(..)
+    , view
+    , creatingTag
+    , Env(..)
+    , config
+    , state
+    , userData
+    , AppEnvT
     , AppEnv
-    , runAppEnv
-    , liftToAppEnv
     ) where
 
 import Control.Monad.Reader (ReaderT)
 import Data.Functor.Identity (Identity)
 
-import qualified Config as C (Config)
-import qualified State as S (State)
-import qualified UserData as UD (UserData)
+import qualified Lens.Micro.Platform as LM (makeLenses)
 
-data Env = Env { config :: C.Config
-               , state :: S.State
-               , userData :: UD.UserData
+import qualified Config as C (Config)
+import qualified TimeUnit as TU (TimeSlot)
+import qualified UserData as UD (UserData)
+import qualified View as V (View)
+
+data State = State { _view :: AppEnv V.View
+                   , _creatingTag :: Maybe TU.TimeSlot
+                   }
+
+data Env = Env { _config :: C.Config
+               , _state :: State
+               , _userData :: UD.UserData
                }
 
-newtype AppEnvT m a = AppEnvT { runAppEnvT :: ReaderT Env m a }
-    deriving (Functor, Applicative, Monad)
-
+type AppEnvT m a = ReaderT Env m a
 type AppEnv a = AppEnvT Identity a
 
-runAppEnv :: AppEnv a -> ReaderT Env Identity a
-runAppEnv = runAppEnvT
-
-liftToAppEnv :: ReaderT Env Identity a -> AppEnv a
-liftToAppEnv = AppEnvT
+LM.makeLenses ''State
+LM.makeLenses ''Env

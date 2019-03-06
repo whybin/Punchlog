@@ -10,6 +10,7 @@ module App
     ( runApp
     ) where
 
+import Control.Applicative (liftA2)
 import Control.Monad (void)
 import Control.Monad.Reader (ask, runReader, withReader)
 
@@ -19,12 +20,12 @@ import qualified GI.Gtk as Gtk
 import GI.Gtk.Declarative (Attribute((:=)))
 import qualified GI.Gtk.Declarative as GD
 import qualified GI.Gtk.Declarative.App.Simple as GD
+import qualified Lens.Micro.Platform as LM (view)
 
 import qualified Env as E
 import qualified Event as Ev (BasicEvent(..), Event(..), IsEvent(..))
 import qualified GtkDecl.Extra.FlowBox
-import qualified Config as C (Config(..))
-import qualified State as S (State(..))
+import qualified Config as C (Config, timeConfig)
 import qualified TimeUnit as TU (minuteMarks)
 import qualified Ui.Sidebar as Si (sidebarView)
 import qualified Ui.TimeSlot as TS (onActivateTimeSlot)
@@ -43,14 +44,10 @@ view st = GD.bin Gtk.Window [ #title := "Punchlog"
                             , GD.on #deleteEvent
                                 (const (True, Ev.Event Ev.Quit))
                             ]
-            $ (runReader . E.runAppEnv $ readView) st
+            $ (runReader readView) st
 
 readView :: E.AppEnv (GD.Widget Ev.Event)
-readView = do
-    st <- E.state <$> E.liftToAppEnv ask
-    case S.view st of
-      Just v -> processView v
-      Nothing -> mainView >>= processView
+readView = LM.view (E.state . E.view) >>= (>>= processView)
   where
     processView :: V.View -> E.AppEnv (GD.Widget Ev.Event)
     processView view' =
@@ -83,10 +80,8 @@ dayView = do
              $ GD.container Gtk.ListBox [ GD.onM #rowSelected onActivate
                                         ] boxes
     timeLabels :: E.AppEnv [String]
-    timeLabels = do
-        minuteMarks <- E.liftToAppEnv
-            $ withReader (C.timeConfig . E.config) TU.minuteMarks
-        pure $ (++) <$> fmap show [0..23] <*> fmap (':':) minuteMarks
+    timeLabels = (liftA2 (++) (map show [0..23]) . map (':':))
+        <$> withReader (LM.view $ E.config . C.timeConfig) TU.minuteMarks
     timeToBox :: String -> _ Ev.Event
     timeToBox timeStr =
         GD.bin Gtk.ListBoxRow []
@@ -95,15 +90,15 @@ dayView = do
                 $ GD.widget Gtk.Label [#label := T.pack timeStr]
             ]
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
-    timeBoxes = do
-        V.fromList . fmap timeToBox <$> timeLabels
+    timeBoxes = V.fromList . fmap timeToBox <$> timeLabels
 
 initialState :: C.Config -> UD.UserData -> AppState
 initialState config userData =
-    E.Env { E.config = config
-          , E.state = S.State { S.view = Nothing
-                              }
-          , E.userData = userData
+    E.Env { E._config = config
+          , E._state = E.State { E._view = mainView
+                               , E._creatingTag = Nothing
+                               }
+          , E._userData = userData
           }
 
 runApp :: C.Config -> UD.UserData -> IO ()
