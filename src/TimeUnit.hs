@@ -43,15 +43,6 @@ localTime = do
     conf <- ask
     liftIO $ T.utcToLocalTime (timeZone conf) <$> T.getCurrentTime
 
-localToSlot :: T.LocalTime -> Reader TimeConfig TimeSlot
-localToSlot time = asks $ \conf -> (computeValue conf, unit conf)
-    where
-        tod = T.localTimeOfDay time
-        computeValue conf =
-            case unit conf of
-              Hour -> T.todHour tod
-              HalfHour -> T.todHour tod * 2 + (T.todMin tod `div` 30)
-              QuarterHour -> T.todHour tod * 4 + (T.todMin tod `div` 15)
 
 timeOfDayToSlot :: T.TimeOfDay -> Reader TimeConfig TimeSlot
 timeOfDayToSlot tod = asks computeSlot
@@ -64,6 +55,5 @@ timeOfDayToSlot tod = asks computeSlot
         computeSlot conf = (computeUnits (unit conf), unit conf)
 
 currentTimeSlot :: ReaderT TimeConfig IO TimeSlot
-currentTimeSlot = do
-    time <- localTime
-    U.liftReader $ localToSlot time
+currentTimeSlot =
+    localTime >>= U.liftReader . timeOfDayToSlot . T.localTimeOfDay
