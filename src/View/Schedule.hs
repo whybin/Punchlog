@@ -70,10 +70,12 @@ dayView = do
          in do
              createTagView <- CT.createTagView
              wrapListBoxRow . \case
-                 Just slot' | slot == slot' -> GD.container Gtk.ListBox []
-                    [ wrapListBoxRow innerBox
-                    , wrapListBoxRow createTagView
-                    ]
+                 Just slot' | slot == slot' ->
+                     GD.container Gtk.ListBox
+                         [#selectionMode := Gtk.SelectionModeNone]
+                         [ wrapListBoxRow innerBox
+                         , wrapListBoxRow createTagView
+                         ]
                  _ -> innerBox
                  <$> LM.view (E.state . E.creatingTag)
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
