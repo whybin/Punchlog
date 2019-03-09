@@ -1,4 +1,4 @@
-module View where
+module View.Type where
 
 import qualified GI.Gtk.Declarative as GD (Widget)
 

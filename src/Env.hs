@@ -20,9 +20,9 @@ import qualified Lens.Micro.Platform as LM (makeLenses)
 import qualified Config as C (Config)
 import qualified TimeUnit as TU (TimeSlot)
 import qualified UserData as UD (UserData)
-import qualified View as V (View)
+import qualified View.State as V
 
-data State = State { _view :: AppEnv V.View
+data State = State { _view :: V.ViewState
                    , _creatingTag :: Maybe TU.TimeSlot
                    }
 

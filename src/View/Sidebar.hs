@@ -5,7 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 
-module Ui.Sidebar
+module View.Sidebar
     ( sidebarView
     ) where
 
