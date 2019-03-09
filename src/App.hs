@@ -29,11 +29,9 @@ import qualified View.Mapping as V (getView)
 type AppState = E.Env
 
 data Event = Quit
-           | Noop
 
 instance Ev.IsEvent Event where
   update st Quit = GD.Exit
-  update st Noop = GD.Transition st $ pure Nothing
 
 update :: E.Env -> Ev.Event -> GD.Transition E.Env Ev.Event
 update st (Ev.Event ev) = Ev.update st ev
