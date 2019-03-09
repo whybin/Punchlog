@@ -1,7 +1,4 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Event
     ( IsEvent(..)

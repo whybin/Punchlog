@@ -42,7 +42,7 @@ view st = GD.bin Gtk.Window [ #title := "Punchlog"
                             , #defaultHeight := 640
                             , GD.on #deleteEvent (const (True, Ev.Event Quit))
                             ]
-            $ (runReader readView) st
+            $ runReader readView st
 
 readView :: E.AppEnv V.View
 readView = LM.view (E.state . E.view) >>= V.getView

@@ -33,9 +33,9 @@ import qualified View.Sidebar as VS (sidebarView)
 scheduleView :: E.AppEnv V.View
 scheduleView = do
     lview <- VS.sidebarView
-    rview <- dayView
-    pure $ GD.paned [] (GD.pane GD.defaultPaneProperties lview)
-                       (GD.pane GD.defaultPaneProperties rview)
+    GD.paned [] (GD.pane GD.defaultPaneProperties lview)
+        . GD.pane GD.defaultPaneProperties
+        <$> dayView
 
 dayView :: E.AppEnv V.View
 dayView = do
@@ -69,12 +69,12 @@ dayView = do
                 ]
          in do
              createTagView <- CT.createTagView
-             (wrapListBoxRow . \case
+             wrapListBoxRow . \case
                  Just slot' | slot == slot' -> GD.container Gtk.ListBox []
                     [ wrapListBoxRow innerBox
                     , wrapListBoxRow createTagView
                     ]
-                 _ -> innerBox)
+                 _ -> innerBox
                  <$> LM.view (E.state . E.creatingTag)
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
     timeBoxes = timeSlots >>= fmap V.fromList . traverse timeToBox
