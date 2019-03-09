@@ -8,6 +8,7 @@ module TimeUnit
     , TimeSlot(..)
     , TimestampUtc
     , TimeConfig
+    , unit
     , currentTimeSlot
     ) where
 
