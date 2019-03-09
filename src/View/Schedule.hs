@@ -24,7 +24,7 @@ import qualified Env as E (AppEnv, config)
 import qualified Event as Ev (Event)
 import qualified GtkDecl.Extra.FlowBox
 import qualified TimeUnit as TU (minuteMarks)
-import qualified Ui.TimeSlot as TS (onActivateTimeSlot)
+import qualified View.TimeSlot as TS (onActivateTimeSlot)
 import qualified View.Type as V (View)
 import qualified View.Sidebar as VS (sidebarView)
 
