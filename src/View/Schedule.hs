@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -20,10 +21,11 @@ import qualified GI.Gtk.Declarative as GD
 import qualified Lens.Micro.Platform as LM (view)
 
 import qualified Config as C (timeConfig)
-import qualified Env as E (AppEnv, config)
+import qualified Env as E (AppEnv, config, creatingTag, state)
 import qualified Event as Ev (Event)
 import qualified GtkDecl.Extra.FlowBox
-import qualified TimeUnit as TU (minuteMarks)
+import qualified TimeUnit as TU (TimeSlot, timeSlots)
+import qualified View.CreateTag as CT (createTagView)
 import qualified View.TimeSlot as TS (onActivateTimeSlot)
 import qualified View.Type as V (View)
 import qualified View.Sidebar as VS (sidebarView)
@@ -54,15 +56,25 @@ dayView = do
              $ GD.bin Gtk.ScrolledWindow []
              $ GD.container Gtk.ListBox [ GD.onM #rowSelected onActivate
                                         ] boxes
-    timeLabels :: E.AppEnv [String]
-    timeLabels = (liftA2 (++) (map show [0..23]) . map (':':))
-        <$> withReader (LM.view $ E.config . C.timeConfig) TU.minuteMarks
-    timeToBox :: String -> _ Ev.Event
-    timeToBox timeStr =
-        GD.bin Gtk.ListBoxRow []
-        $ GD.container Gtk.FlowBox [#selectionMode := Gtk.SelectionModeNone]
-            [ GD.bin Gtk.FlowBoxChild []
-                $ GD.widget Gtk.Label [#label := T.pack timeStr]
-            ]
+    timeSlots :: E.AppEnv [TU.TimeSlot]
+    timeSlots = withReader (LM.view $ E.config . C.timeConfig) TU.timeSlots
+    wrapListBoxRow :: _ Ev.Event -> _ Ev.Event
+    wrapListBoxRow = GD.bin Gtk.ListBoxRow []
+    timeToBox :: TU.TimeSlot -> E.AppEnv (_ Ev.Event)
+    timeToBox slot =
+        let innerBox = GD.container Gtk.FlowBox
+                [#selectionMode := Gtk.SelectionModeNone]
+                [ GD.bin Gtk.FlowBoxChild []
+                    $ GD.widget Gtk.Label [#label := T.pack (show slot)]
+                ]
+         in do
+             createTagView <- CT.createTagView
+             (wrapListBoxRow . \case
+                 Just slot' | slot == slot' -> GD.container Gtk.ListBox []
+                    [ wrapListBoxRow innerBox
+                    , wrapListBoxRow createTagView
+                    ]
+                 _ -> innerBox)
+                 <$> LM.view (E.state . E.creatingTag)
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
-    timeBoxes = V.fromList . fmap timeToBox <$> timeLabels
+    timeBoxes = timeSlots >>= fmap V.fromList . traverse timeToBox

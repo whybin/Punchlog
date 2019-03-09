@@ -6,6 +6,7 @@
 
 module View.CreateTag
     ( CreateTagEvent(..)
+    , createTagView
     ) where
 
 import qualified GI.Gtk as Gtk (Label(..))
