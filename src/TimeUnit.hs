@@ -1,9 +1,11 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module TimeUnit
     ( TimeUnit(..)
+    , timeSlots
     , minuteMarks
-    , TimeSlot
+    , TimeSlot(..)
     , TimestampUtc
     , TimeConfig
     , currentTimeSlot
@@ -21,9 +23,17 @@ import qualified Util as U (liftReader)
 data TimeUnit = Hour
               | HalfHour
               | QuarterHour
-              deriving Show
+              deriving (Eq, Show)
 
-type TimeSlot = (Int, TimeUnit)
+unitMultiplier :: TimeUnit -> Int
+unitMultiplier =
+    \case
+        Hour -> 1
+        HalfHour -> 2
+        QuarterHour -> 4
+
+newtype TimeSlot = TimeSlot { getTimeSlot :: (Int, TimeUnit) }
+    deriving Eq
 
 data TimestampUtc = TimestampUTC { dayUtc :: T.Day
                                  , timeSlotUtc :: TimeSlot
@@ -33,6 +43,21 @@ data TimeConfig = TimeConfig { _unit :: TimeUnit
                              , _timeZone :: T.TimeZone
                              }
 LM.makeLenses ''TimeConfig
+
+instance Show TimeSlot where
+  show (TimeSlot (x, unit')) = hours ++ ":" ++ minutes
+    where
+      hours :: String
+      hours = show $ x `div` unitMultiplier unit'
+      minutes :: String
+      minutes = minuteMarksFor unit' !! (x `mod` unitMultiplier unit')
+
+timeSlots :: Reader TimeConfig [TimeSlot]
+timeSlots = timeSlotsFor <$> LM.view unit
+  where
+    timeSlotsFor :: TimeUnit -> [TimeSlot]
+    timeSlotsFor unit' =
+        (\x -> TimeSlot (x, unit')) <$> [0..unitMultiplier unit' * 24 - 1]
 
 minuteMarksFor :: TimeUnit -> [String]
 minuteMarksFor Hour = ["00"]
@@ -57,7 +82,7 @@ timeOfDayToSlot tod = computeSlot <$> LM.view unit
               HalfHour -> T.todHour tod * 2 + (T.todMin tod `div` 30)
               QuarterHour -> T.todHour tod * 4 + (T.todMin tod `div` 15)
         computeSlot :: TimeUnit -> TimeSlot
-        computeSlot units = (computeUnits units, units)
+        computeSlot units = TimeSlot (computeUnits units, units)
 
 currentTimeSlot :: ReaderT TimeConfig IO TimeSlot
 currentTimeSlot =
