@@ -9,9 +9,9 @@ module View.CreateTag
     , createTagView
     ) where
 
-import qualified GI.Gtk as Gtk (Label(..))
+import qualified GI.Gtk as Gtk (Box(..), Button(..), Entry(..), Orientation(..))
 import GI.Gtk.Declarative (Attribute((:=)))
-import qualified GI.Gtk.Declarative as GD (Widget(..), widget)
+import qualified GI.Gtk.Declarative as GD (Widget(..), container, widget)
 import qualified GI.Gtk.Declarative.App.Simple as GD (Transition(..))
 import qualified Lens.Micro.Platform as LM (set)
 
@@ -27,5 +27,8 @@ instance Ev.IsEvent CreateTagEvent where
        in GD.Transition st' $ pure Nothing
 
 createTagView :: E.AppEnv (GD.Widget Ev.Event)
-createTagView = pure $
-    GD.widget Gtk.Label [#label := "create tag"]
+createTagView = pure
+    $ GD.container Gtk.Box [#orientation := Gtk.OrientationVertical]
+        [ GD.widget Gtk.Entry [#placeholderText := "tag name"]
+        , GD.widget Gtk.Button [#label := "Add tag"]
+        ]

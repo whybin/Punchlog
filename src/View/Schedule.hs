@@ -58,8 +58,6 @@ dayView = do
                                         ] boxes
     timeSlots :: E.AppEnv [TU.TimeSlot]
     timeSlots = withReader (LM.view $ E.config . C.timeConfig) TU.timeSlots
-    wrapListBoxRow :: _ Ev.Event -> _ Ev.Event
-    wrapListBoxRow = GD.bin Gtk.ListBoxRow []
     timeToBox :: TU.TimeSlot -> E.AppEnv (_ Ev.Event)
     timeToBox slot =
         let innerBox = GD.container Gtk.FlowBox
@@ -69,13 +67,12 @@ dayView = do
                 ]
          in do
              createTagView <- CT.createTagView
-             wrapListBoxRow . \case
-                 Just slot' | slot == slot' ->
-                     GD.container Gtk.ListBox
-                         [#selectionMode := Gtk.SelectionModeNone]
-                         [ wrapListBoxRow innerBox
-                         , wrapListBoxRow createTagView
-                         ]
+             GD.bin Gtk.ListBoxRow [] . \case
+                 Just slot' | slot == slot' -> GD.container Gtk.Box
+                     [#orientation := Gtk.OrientationVertical]
+                     [ GD.BoxChild GD.defaultBoxChildProperties innerBox
+                     , GD.BoxChild GD.defaultBoxChildProperties createTagView
+                     ]
                  _ -> innerBox
                  <$> LM.view (E.state . E.creatingTag)
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
