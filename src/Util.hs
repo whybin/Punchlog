@@ -1,13 +1,13 @@
 module Util
-    ( liftReader
+    ( transformReader
     , untransformReader
     ) where
 
-import Control.Monad.Reader (Reader, ReaderT(..), mapReaderT, runReader)
-import Data.Functor.Identity (Identity(..))
+import Control.Monad.Reader (Reader, ReaderT, mapReaderT)
+import Data.Functor.Identity (Identity(..), runIdentity)
 
-liftReader :: Monad m => Reader r a -> ReaderT r m a
-liftReader reader = ReaderT $ return . runReader reader
+transformReader :: Monad m => Reader r a -> ReaderT r m a
+transformReader = mapReaderT $ pure . runIdentity
 
 untransformReader :: Monad m => ReaderT r m a -> Reader r (m a)
 untransformReader = mapReaderT Identity

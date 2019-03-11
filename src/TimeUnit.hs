@@ -20,7 +20,7 @@ import qualified Data.Time.Clock as T
 import qualified Data.Time.LocalTime as T
 import qualified Lens.Micro.Platform as LM (makeLenses, view)
 
-import qualified Util as U (liftReader)
+import qualified Util as U (transformReader)
 
 data TimeUnit = Hour
               | HalfHour
@@ -98,4 +98,4 @@ timeOfDayToSlot tod = computeSlot <$> LM.view unit
 
 currentTimeSlot :: ReaderT TimeConfig IO TimeSlot
 currentTimeSlot =
-    localTime >>= U.liftReader . timeOfDayToSlot . T.localTimeOfDay
+    localTime >>= U.transformReader . timeOfDayToSlot . T.localTimeOfDay
