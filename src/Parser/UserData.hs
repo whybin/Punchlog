@@ -12,7 +12,7 @@ import qualified Data.Aeson as A (decodeFileStrict)
 import qualified Data.Aeson.TH as A (defaultOptions, deriveJSON)
 
 import Parser.Tag
-import qualified Tag (AllTags(..))
+import qualified Tag.Class as Tag (AllTags(..))
 import UserData
 
 $(A.deriveJSON A.defaultOptions ''UserData)

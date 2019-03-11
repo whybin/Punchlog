@@ -1,7 +1,7 @@
-module Tag
+module Tag.Class
     ( AllTags(..)
     , DayTags
-    , RawTag
+    , RawTag(..)
     ) where
 
 import qualified Data.Text as T (Text)
