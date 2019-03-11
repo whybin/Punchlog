@@ -36,7 +36,7 @@ unitMultiplier =
 newtype TimeSlot = TimeSlot { getTimeSlot :: (Int, TimeUnit) }
     deriving Eq
 
-data TimestampUtc = TimestampUTC { dayUtc :: T.Day
+data TimestampUtc = TimestampUtc { dayUtc :: T.Day
                                  , timeSlotUtc :: TimeSlot
                                  }
 
