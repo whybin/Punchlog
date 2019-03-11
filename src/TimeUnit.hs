@@ -9,6 +9,7 @@ module TimeUnit
     , TimestampUtc
     , TimeConfig
     , unit
+    , timeSlotToTimestamp
     , currentTimeSlot
     ) where
 
@@ -68,11 +69,21 @@ minuteMarksFor QuarterHour = ["00", "15", "30", "45"]
 minuteMarks :: Reader TimeConfig [String]
 minuteMarks = minuteMarksFor <$> LM.view unit
 
+timeSlotToTimestamp :: TimeSlot -> ReaderT TimeConfig IO TimestampUtc
+timeSlotToTimestamp slot = dayToTimestamp <$> localToday
+  where
+    dayToTimestamp :: T.Day -> TimestampUtc
+    dayToTimestamp day = TimestampUtc { dayUtc = day
+                                      , timeSlotUtc = slot
+                                      }
+
 localTime :: ReaderT TimeConfig IO T.LocalTime
 localTime = do
     tz <- LM.view timeZone
     liftIO $ T.utcToLocalTime tz <$> T.getCurrentTime
 
+localToday :: ReaderT TimeConfig IO T.Day
+localToday = T.localDay <$> localTime
 
 timeOfDayToSlot :: T.TimeOfDay -> Reader TimeConfig TimeSlot
 timeOfDayToSlot tod = computeSlot <$> LM.view unit

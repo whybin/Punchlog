@@ -66,7 +66,7 @@ dayView = do
                     $ GD.widget Gtk.Label [#label := T.pack (show slot)]
                 ]
          in do
-             createTagView <- CT.createTagView
+             createTagView <- CT.createTagView slot
              GD.bin Gtk.ListBoxRow [] . \case
                  Just slot' | slot == slot' -> GD.container Gtk.Box
                      [#orientation := Gtk.OrientationVertical]
