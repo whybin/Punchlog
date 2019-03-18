@@ -24,4 +24,4 @@ dataFromFilePath :: FilePath -> IO (Maybe UserData)
 dataFromFilePath = A.decodeFileStrict
 
 defaultData :: UserData
-defaultData = UserData { tags = Tag.AllTags [] }
+defaultData = UserData { _tags = Tag.AllTags [] }
