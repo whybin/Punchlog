@@ -10,13 +10,13 @@ import qualified Data.Text as T (pack, unpack)
 import qualified Data.Text.Read as T (decimal)
 import qualified Data.Time.Calendar as TC (Day(..))
 
-import Tag.Class (AllTags(..), DayTags, RawTag)
+import Tag.Class (AllTags(..), DayTags(..), RawTag)
 import Parser.TimeUnit
 
 $(A.deriveJSON A.defaultOptions ''RawTag)
 
 kvFromDaily :: A.KeyValue kv => DayTags -> kv
-kvFromDaily (day, tags) = (T.pack . show $ day) .= tags
+kvFromDaily (DayTags (day, tags)) = (T.pack . show $ day) .= tags
 
 instance A.ToJSON AllTags where
     toJSON = A.object . map kvFromDaily . getAllTags
@@ -30,6 +30,6 @@ instance A.FromJSON AllTags where
                       Left _ ->
                           fail $ "Failed to parse day: " ++ T.unpack dayStr
                       Right (day, _) ->
-                          sequenceA ( TC.ModifiedJulianDay day
-                                    , A.parseJSON dataStr
-                                    )
+                          DayTags <$> sequenceA ( TC.ModifiedJulianDay day
+                                                , A.parseJSON dataStr
+                                                )

@@ -1,6 +1,6 @@
 module Tag.Class
     ( AllTags(..)
-    , DayTags
+    , DayTags(..)
     , RawTag(..)
     ) where
 
@@ -17,8 +17,17 @@ data RawTag = RawTag { tagId      :: Integer
 
 -- Aggregate tag data
 
-type DayTags = (TC.Day, [RawTag])
+newtype DayTags = DayTags { getDayTags :: (TC.Day, [RawTag]) }
 
+-- | Equality of DayTags is established by comparing the day referred to,
+-- regardless of the value(s) of its tags
+instance Eq DayTags where
+  DayTags (d, _) == DayTags (d', _) = d == d'
+
+instance Ord DayTags where
+  compare (DayTags (d, _)) (DayTags (d', _)) = compare d d'
+
+-- Collection of all tags by day in reverse chronological order
 newtype AllTags = AllTags { getAllTags :: [DayTags] }
 
 -- UI tags
