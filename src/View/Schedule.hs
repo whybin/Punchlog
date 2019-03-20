@@ -27,6 +27,7 @@ import qualified Tag.Base as Tag (tagsOnDay)
 import qualified Tag.Class as Tag (RawTag(..))
 import qualified TimeUnit as TU
   ( TimeSlot
+  , TimestampUtc(..)
   , localToday
   , timeSlots
   )
@@ -66,27 +67,30 @@ dayView day = do
                                         ] boxes
     timeSlots :: E.AppEnv [TU.TimeSlot]
     timeSlots = withReader (LM.view $ E.config . C.timeConfig) TU.timeSlots
+    day'sTags :: E.AppEnv [Tag.RawTag]
+    day'sTags = do
+        allTags <- LM.view (E.userData . UD.tags)
+        pure . Tag.tagsOnDay allTags $ V.calendarDay day
     timeToBox :: TU.TimeSlot -> E.AppEnv (_ Ev.Event)
-    timeToBox slot =
+    timeToBox slot = do
+        tags <- filter ((== slot) . TU.timeSlotUtc . Tag.time) <$> day'sTags
+        tagBoxes <- traverse tagToBox tags
         let innerBox = GD.container Gtk.FlowBox
                 [#selectionMode := Gtk.SelectionModeNone]
-                [ GD.bin Gtk.FlowBoxChild []
-                    $ GD.widget Gtk.Label [#label := T.pack (show slot)]
+                $ V.fromList (label : reverse tagBoxes)
+            label = GD.bin Gtk.FlowBoxChild []
+                $ GD.widget Gtk.Label [#label := T.pack (show slot)]
+        createTagView <- CT.createTagView slot
+        GD.bin Gtk.ListBoxRow [] . \case
+            Just slot' | slot == slot' -> GD.container Gtk.Box
+                [#orientation := Gtk.OrientationVertical]
+                [ GD.BoxChild GD.defaultBoxChildProperties innerBox
+                , GD.BoxChild GD.defaultBoxChildProperties createTagView
                 ]
-         in do
-             allTags <- LM.view (E.userData . UD.tags)
-             let tags = Tag.tagsOnDay allTags $ V.calendarDay day
-             createTagView <- CT.createTagView slot
-             GD.bin Gtk.ListBoxRow [] . \case
-                 Just slot' | slot == slot' -> GD.container Gtk.Box
-                     [#orientation := Gtk.OrientationVertical]
-                     [ GD.BoxChild GD.defaultBoxChildProperties innerBox
-                     , GD.BoxChild GD.defaultBoxChildProperties createTagView
-                     ]
-                 _ -> innerBox
-                 <$> LM.view (E.state . E.creatingTag)
+            _ -> innerBox
+            <$> LM.view (E.state . E.creatingTag)
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
     timeBoxes = timeSlots >>= fmap V.fromList . traverse timeToBox
 
-tagToBox :: Tag.RawTag -> E.AppEnv V.View
+tagToBox :: Tag.RawTag -> E.AppEnv (GD.Bin Gtk.FlowBoxChild Ev.Event)
 tagToBox = fmap (GD.bin Gtk.FlowBoxChild []) . VT.tagView

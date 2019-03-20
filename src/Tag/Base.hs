@@ -41,9 +41,5 @@ insertByDay ds d@(DayTags (day, tag)) =
      in after ++ before'
 
 tagsOnDay :: AllTags -> TC.Day -> [RawTag]
-tagsOnDay (AllTags allTags) day = maybe [] getTags $ F.find onGivenDay allTags
-  where
-    onGivenDay :: DayTags -> Bool
-    onGivenDay (DayTags (day', _)) = day' == day
-    getTags :: DayTags -> [RawTag]
-    getTags (DayTags (_, tags)) = tags
+tagsOnDay (AllTags allTags) day =
+    maybe [] id . lookup day $ map getDayTags allTags
