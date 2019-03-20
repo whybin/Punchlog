@@ -9,4 +9,4 @@ import qualified View.Type as V (View)
 
 getView :: V.ViewState -> E.AppEnv V.View
 getView = \case
-            V.Schedule -> VS.scheduleView
+            V.Schedule day -> VS.scheduleView day

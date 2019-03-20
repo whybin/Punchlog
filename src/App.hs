@@ -9,9 +9,9 @@ module App
     ( runApp
     ) where
 
-import Control.Monad (void)
 import Control.Monad.Reader (runReader)
 
+import qualified Data.Time.Clock as TC (UTCTime, getCurrentTime)
 import qualified GI.Gtk as Gtk
 import GI.Gtk.Declarative (Attribute((:=)))
 import qualified GI.Gtk.Declarative as GD
@@ -22,7 +22,7 @@ import qualified Env as E
 import qualified Event as Ev (Event(..), IsEvent(..))
 import qualified Config as C (Config)
 import qualified UserData as UD (UserData)
-import qualified View.State as V (ViewState(..))
+import qualified View.State as V (Day(..), ViewState(..))
 import qualified View.Type as V (View)
 import qualified View.Mapping as V (getView)
 
@@ -47,19 +47,21 @@ view st = GD.bin Gtk.Window [ #title := "Punchlog"
 readView :: E.AppEnv V.View
 readView = LM.view (E.state . E.view) >>= V.getView
 
-initialState :: C.Config -> UD.UserData -> AppState
-initialState config userData =
+initialState :: C.Config -> UD.UserData -> TC.UTCTime -> AppState
+initialState config userData currTime =
     E.Env { E._config = config
-          , E._state = E.State { E._view = V.Schedule
+          , E._state = E.State { E._view = V.Schedule (V.Today currTime)
                                , E._creatingTag = Nothing
                                }
           , E._userData = userData
           }
 
 runApp :: C.Config -> UD.UserData -> IO ()
-runApp config userData = void $
+runApp config userData = do
+    currTime <- TC.getCurrentTime
     GD.run GD.App { GD.update = update
                   , GD.view = view
                   , GD.inputs = []
-                  , GD.initialState = initialState config userData
+                  , GD.initialState = initialState config userData currTime
                   }
+    pure ()

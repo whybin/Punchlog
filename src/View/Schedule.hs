@@ -3,7 +3,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 
 module View.Schedule
@@ -39,19 +38,19 @@ import qualified View.Tag as VT (tagView)
 import qualified View.TimeSlot as TS (onActivateTimeSlot)
 import qualified View.Type as V (View)
 
-scheduleView :: E.AppEnv V.View
-scheduleView = do
+scheduleView :: V.Day -> E.AppEnv V.View
+scheduleView day = do
     lview <- VS.sidebarView
     GD.paned [] (GD.pane GD.defaultPaneProperties lview)
         . GD.pane GD.defaultPaneProperties
-        <$> dayView
+        <$> dayView day
 
-dayView :: E.AppEnv V.View
-dayView = do
+dayView :: V.Day -> E.AppEnv V.View
+dayView day = do
     hoursView' <- hoursView
     pure $ GD.bin Gtk.Viewport [] $
         GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
-            [ GD.widget Gtk.Label [ #label := "Today", #xalign := 0 ]
+            [ GD.widget Gtk.Label [#label := (T.pack $ show day), #xalign := 0]
             , hoursView'
             ]
   where
@@ -75,6 +74,8 @@ dayView = do
                     $ GD.widget Gtk.Label [#label := T.pack (show slot)]
                 ]
          in do
+             allTags <- LM.view (E.userData . UD.tags)
+             let tags = Tag.tagsOnDay allTags $ V.calendarDay day
              createTagView <- CT.createTagView slot
              GD.bin Gtk.ListBoxRow [] . \case
                  Just slot' | slot == slot' -> GD.container Gtk.Box
