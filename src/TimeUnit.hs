@@ -6,10 +6,11 @@ module TimeUnit
     , timeSlots
     , minuteMarks
     , TimeSlot(..)
-    , TimestampUtc
+    , TimestampUtc(..)
     , TimeConfig
     , unit
     , timeSlotToTimestamp
+    , localToday
     , currentTimeSlot
     ) where
 
