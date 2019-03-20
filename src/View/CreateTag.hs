@@ -24,15 +24,17 @@ import qualified GI.Gtk.Declarative as GD
   , widget
   )
 import qualified GI.Gtk.Declarative.App.Simple as GD (Transition(..))
+import Lens.Micro.Platform ((%~))
 import qualified Lens.Micro.Platform as LM (set, view)
 
 import qualified Config as C (timeConfig)
-import qualified Env as E (AppEnv, config, creatingTag, state)
+import qualified Env as E (AppEnv, config, creatingTag, state, userData)
 import qualified Event as Ev (Event(..), IsEvent(..))
 import qualified Tag.Base as Tag (addTag, newTag)
 import qualified Tag.Class as Tag (RawTag)
 import qualified TimeUnit as TU (TimeSlot, TimestampUtc, timeSlotToTimestamp)
 import qualified Util as U (untransformReader)
+import qualified UserData as UD (tags)
 
 data CreateTagEvent = CreateTag TU.TimeSlot
                     | NewTag Tag.RawTag
@@ -43,7 +45,8 @@ instance Ev.IsEvent CreateTagEvent where
        in GD.Transition st' $ pure Nothing
   update st (NewTag tag) =
       let st' = LM.set (E.state . E.creatingTag) Nothing st
-       in GD.Transition st' $ pure Nothing
+          st'' = ((E.userData . UD.tags) %~ Tag.addTag tag) st'
+       in GD.Transition st'' $ pure Nothing
 
 createTagView :: TU.TimeSlot -> E.AppEnv (GD.Widget Ev.Event)
 createTagView slot = do

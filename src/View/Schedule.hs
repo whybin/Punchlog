@@ -21,14 +21,23 @@ import qualified GI.Gtk.Declarative as GD
 import qualified Lens.Micro.Platform as LM (view)
 
 import qualified Config as C (timeConfig)
-import qualified Env as E (AppEnv, config, creatingTag, state)
+import qualified Env as E (AppEnv, config, creatingTag, state, userData)
 import qualified Event as Ev (Event)
 import qualified GtkDecl.Extra.FlowBox
-import qualified TimeUnit as TU (TimeSlot, timeSlots)
+import qualified Tag.Base as Tag (tagsOnDay)
+import qualified Tag.Class as Tag (RawTag(..))
+import qualified TimeUnit as TU
+  ( TimeSlot
+  , localToday
+  , timeSlots
+  )
+import qualified UserData as UD (tags)
 import qualified View.CreateTag as CT (createTagView)
+import qualified View.Sidebar as VS (sidebarView)
+import qualified View.State as V (Day, calendarDay)
+import qualified View.Tag as VT (tagView)
 import qualified View.TimeSlot as TS (onActivateTimeSlot)
 import qualified View.Type as V (View)
-import qualified View.Sidebar as VS (sidebarView)
 
 scheduleView :: E.AppEnv V.View
 scheduleView = do
@@ -77,3 +86,6 @@ dayView = do
                  <$> LM.view (E.state . E.creatingTag)
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
     timeBoxes = timeSlots >>= fmap V.fromList . traverse timeToBox
+
+tagToBox :: Tag.RawTag -> E.AppEnv V.View
+tagToBox = fmap (GD.bin Gtk.FlowBoxChild []) . VT.tagView
