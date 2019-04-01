@@ -65,8 +65,6 @@ dayView day = do
              $ GD.bin Gtk.ScrolledWindow []
              $ GD.container Gtk.ListBox [ GD.onM #rowSelected onActivate
                                         ] boxes
-    timeSlots :: E.AppEnv [TU.TimeSlot]
-    timeSlots = withReader (LM.view $ E.config . C.timeConfig) TU.timeSlots
     day'sTags :: E.AppEnv [Tag.RawTag]
     day'sTags = do
         allTags <- LM.view (E.userData . UD.tags)
@@ -91,6 +89,9 @@ dayView day = do
             <$> LM.view (E.state . E.creatingTag)
     timeBoxes :: E.AppEnv (_ (_ Ev.Event))
     timeBoxes = timeSlots >>= fmap V.fromList . traverse timeToBox
+
+timeSlots :: E.AppEnv [TU.TimeSlot]
+timeSlots = withReader (LM.view $ E.config . C.timeConfig) TU.timeSlots
 
 tagToBox :: Tag.RawTag -> E.AppEnv (GD.Bin Gtk.FlowBoxChild Ev.Event)
 tagToBox = fmap (GD.bin Gtk.FlowBoxChild []) . VT.tagView
