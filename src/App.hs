@@ -9,8 +9,10 @@ module App
     ( runApp
     ) where
 
-import Control.Monad.Reader (runReader)
+import Control.Monad (void)
 
+import Control.Concurrent.Async (async)
+import Control.Monad.Reader (runReader)
 import qualified Data.Time.Clock as TC (UTCTime, getCurrentTime)
 import qualified GI.Gtk as Gtk
 import GI.Gtk.Declarative (Attribute((:=)))
@@ -21,6 +23,7 @@ import qualified Lens.Micro.Platform as LM (view)
 import qualified Env as E
 import qualified Event as Ev (Event(..), IsEvent(..))
 import qualified Config as C (Config)
+import qualified Style as S (initDefaultStyle)
 import qualified UserData as UD (UserData)
 import qualified View.State as V (Day(..), ViewState(..))
 import qualified View.Type as V (View)
@@ -59,9 +62,12 @@ initialState config userData currTime =
 runApp :: C.Config -> UD.UserData -> IO ()
 runApp config userData = do
     currTime <- TC.getCurrentTime
-    GD.run GD.App { GD.update = update
-                  , GD.view = view
-                  , GD.inputs = []
-                  , GD.initialState = initialState config userData currTime
-                  }
-    pure ()
+    let app = GD.App { GD.update = update
+                     , GD.view = view
+                     , GD.inputs = []
+                     , GD.initialState = initialState config userData currTime
+                     }
+    void $ Gtk.init Nothing
+    S.initDefaultStyle
+    void $ async (GD.runLoop app >> Gtk.mainQuit)
+    Gtk.main

@@ -22,13 +22,16 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - aeson == 1.4.*
+- async == 2.*
 - bytestring == 0.10.*
+- gi-gdk == 3.*
 - gi-gtk == 3.*
 - gi-gtk-declarative == 0.4.*
 - gi-gtk-declarative-app-simple == 0.4.*
 - haskell-gi-base == 0.21.*
 - microlens-platform == 0.3.*
 - mtl == 2.2.*
+- raw-strings-qq == 1.*
 - text == 1.2.*
 - time == 1.8.*
 - transformers == 0.5.*

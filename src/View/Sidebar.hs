@@ -18,6 +18,7 @@ import qualified GI.Gtk.Declarative as GD
   ( BoxChild
   , Widget
   , afterCreated
+  , classes
   , container
   , widget
   )
@@ -29,7 +30,9 @@ sidebarView :: E.AppEnv (GD.Widget Ev.Event)
 sidebarView = boxUp <$> sequenceA [categorySortView]
   where
     boxUp :: V.Vector (GD.BoxChild Ev.Event) -> GD.Widget Ev.Event
-    boxUp = GD.container Gtk.Box [#orientation := Gtk.OrientationVertical]
+    boxUp = GD.container Gtk.Box [ GD.classes ["sidebar"]
+                                 , #orientation := Gtk.OrientationVertical
+                                 ]
 
 categorySortView :: E.AppEnv (GD.BoxChild Ev.Event)
 categorySortView = pure $ GD.widget Gtk.ComboBoxText [GD.afterCreated addText]
