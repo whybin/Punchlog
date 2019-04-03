@@ -5,6 +5,7 @@ module Tag.Base
     ) where
 
 import qualified Data.Foldable as F (find)
+import Data.Maybe (fromMaybe)
 
 import qualified Data.Text as T (Text)
 import qualified Data.Time.Calendar as TC (Day)
@@ -42,4 +43,4 @@ insertByDay ds d@(DayTags (day, tag)) =
 
 tagsOnDay :: AllTags -> TC.Day -> [RawTag]
 tagsOnDay (AllTags allTags) day =
-    maybe [] id . lookup day $ map getDayTags allTags
+    fromMaybe [] . lookup day $ map getDayTags allTags
