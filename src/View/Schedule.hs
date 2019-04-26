@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 
 module View.Schedule
@@ -50,7 +51,10 @@ dayView :: V.Day -> E.AppEnv V.View
 dayView day = do
     hoursView' <- hoursView
     pure $ GD.bin Gtk.Viewport [] $
-        GD.container Gtk.Box [ #orientation := Gtk.OrientationVertical ]
+        GD.container Gtk.Box
+            [ GD.classes ["day"]
+            , #orientation := Gtk.OrientationVertical
+            ]
             [ GD.widget Gtk.Label [#label := T.pack (show day), #xalign := 0]
             , hoursView'
             ]
